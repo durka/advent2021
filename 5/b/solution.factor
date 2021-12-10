@@ -26,30 +26,33 @@ USING: kernel namespaces locals combinators prettyprint
     [ split-coords ] map
 ;
 
-! check if a line is horizontal or vertical
-: axis-aligned? ( coords -- ? )
-    [ first ] [ last ] bi           ! { x1 y1 } { x2 y2 }
-    [ <=> ] 2map                    ! { x1<=>x2 y1<=> y2 }
-    {
-        { { +eq+ +lt+ } [ t ] }     ! vertical
-        { { +eq+ +gt+ } [ t ] }     ! vertical
-        { { +lt+ +eq+ } [ t ] }     ! horizontal
-        { { +gt+ +eq+ } [ t ] }     ! horizontal
-        [ drop f ]
-    } case
+: expand-aa-line ( endpoints -- allpoints )
+    flip                                ! { { x1 x2 } { y1 y2 } }
+    [ first2 [a..b] >array ] map        ! { { x1..x2 } { y1..y2 } } one is a single elem seq, the other is a range
+    first2 cartesian-product concat     ! { { x1 y1 }..{ x2 y2 } }
+;
+
+: expand-diag-line ( endpoints -- allpoints )
+    flip
+    [ first2 [a..b] >array ] map
+    flip
+;
+
+: diagonal? ( endpoints -- ? )
+    first2 [ = ] 2map
+    first2 or not
 ;
 
 : expand-line ( endpoints -- allpoints )
-    flip
-    [ first2 [a..b] >array ] map
-    first2 cartesian-product concat
+    dup diagonal? [ expand-diag-line ] [ expand-aa-line ] if
 ;
 
 : run ( filename -- )
     utf8 file-lines               ! read file into sequence
-    [ parse-line ] map            ! parse each line into pairs of coordinates
-    [ axis-aligned? ] filter      ! keep only vertical/horizontal lines
-    [ expand-line ] map           ! fill in all the points between endpoints
+    [
+        parse-line            ! parse each line into pairs of coordinates
+        expand-line           ! fill in all the points between endpoints
+    ] map
     concat                        ! flatten to a simple list of points
     duplicates                    ! keep only points that appear more than once
     members                       ! remove the duplicate duplicates
