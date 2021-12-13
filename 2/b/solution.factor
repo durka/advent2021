@@ -1,4 +1,4 @@
-IN: advent1b
+IN: advent2b
 USING: kernel namespaces combinators prettyprint math math.parser
        io io.files io.encodings.utf8 command-line
        sequences grouping splitting

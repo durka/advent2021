@@ -1,4 +1,4 @@
-IN: advent1b
+IN: advent5a
 USING: kernel namespaces locals combinators prettyprint
        math math.parser math.bitwise math.order math.ranges
        io io.files io.encodings.utf8 command-line
